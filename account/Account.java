@@ -1,19 +1,23 @@
 package account;
 
-class Account {
+public class Account {
 	int UID;
 	int balance;
 
-	Account (int UID, int balance) {
+	public Account (int UID, int balance) {
 		this.UID = UID;
 		this.balance = balance;
 	}
 
-	void deposit (int amount) {
+	public int getUID () {
+		return UID;
+	}
+
+	public void deposit (int amount) {
 		balance += amount;
 	}
 
-	int getBalance () {
+	public int getBalance () {
 		return balance;
 	}
 }

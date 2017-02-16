@@ -1,5 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import requesttypes.*;
+import responsetypes.*;
 
 class BankClient {
 	
@@ -10,14 +13,16 @@ class BankClient {
 		String userInput;
 
 		try(Socket echoSocket = new Socket (hostname, portNumber);
-			PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+			OutputStream out = echoSocket.getOutputStream();
 			BufferedReader in = new BufferedReader (new InputStreamReader(echoSocket.getInputStream()));
 			BufferedReader stdIn = new BufferedReader (new InputStreamReader (System.in))) {
-
-			while ((userInput = stdIn.readLine()) != null) {
-				out.println(userInput);
-				System.out.println ("echo: " + in.readLine());
-			}
+			
+			ObjectOutputStream os = new ObjectOutputStream(out);
+			
+			os.writeObject(new Request("NewAccountCreation"));
+			//os.writeObject( "Now I understand this example of object serialization.");
+			//System.out.println (in.readLine());	
+			
 
 		}catch (UnknownHostException e) {
 			System.err.println("Don't know about host " + hostname);
