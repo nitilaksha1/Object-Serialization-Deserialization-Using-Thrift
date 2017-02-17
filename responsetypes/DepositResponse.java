@@ -7,14 +7,14 @@ enum Status {
 }
 
 public class DepositResponse extends Response {
-	private Status stat;
+	private String stat;
 
-	public DepositResponse (String name, Status stat) {
+	public DepositResponse (String name, String stat) {
 		super(name);
 		this.stat = stat;
 	}
 
-	public Status getResponse() {
+	public String getResponse() {
 		return stat;
 	}
 }

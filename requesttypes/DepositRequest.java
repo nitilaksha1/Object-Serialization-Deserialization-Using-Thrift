@@ -6,7 +6,7 @@ public class DepositRequest extends Request {
 	private int accountUID;
 	private int amount;
 
-	DepositRequest (String name, int accUID, int amt) {
+	public DepositRequest (String name, int accUID, int amt) {
 
 		super(name);
 
