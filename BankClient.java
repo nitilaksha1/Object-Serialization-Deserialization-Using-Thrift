@@ -81,10 +81,6 @@ class BankClient {
 			InputStream in = echoSocket.getInputStream();
 			BufferedReader stdIn = new BufferedReader (new InputStreamReader (System.in))) {
 
-			ObjectOutputStream os = new ObjectOutputStream(out);
-			os.writeObject(new Request("NewAccountCreation"));
-			ObjectInputStream oin = new ObjectInputStream(in);
-
 			PrintWriter writer = new PrintWriter("clientLog.txt", "UTF-8");	
 
 			//Creating 100 accounts on the server
