@@ -8,7 +8,7 @@ Class Account:
   * UID: Integer
   * balance: Integer
 <br />
-Each Account will have a unique UID, which will be used as a key for storing data in the hashtable of the server. The server <br />suppors four operations:<br />
+Each Account will have a unique UID, which will be used as a key for storing data in the hashtable of the server. The server supports four operations:<br />
 1. CreateAccount:This will insert a new account object in the server’s hashtable. Initial balance will be zero.<br /> input parameter: nothing<br />
 output parameter: UID for the new account will be returned by this parameter.<br />
 2. Deposit:This will add a specified amount (positive integer) to the specified account.<br />
