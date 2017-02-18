@@ -50,6 +50,7 @@ class Processor implements Runnable {
 class BankClient {
 	
 	private ArrayList<Integer> accountlist = new ArrayList<Integer>();
+	private static Random rand = new Random();
 
 	ArrayList<Integer> getAccountList () {
 		return accountlist;
@@ -210,12 +211,12 @@ class BankClient {
 			writer.println();
 
 			//Creating diffeent threads for executing the same task n times
-			ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+			/*ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
 			for (int i = 0; i < iterationCount; i++) {
 				executor.submit(new Processor(i, bankclient, bankclient.getAccountList(), writer, hostname, portNumber));
 			}
-		
+				
 			executor.shutdown();
 
 			try {
@@ -223,11 +224,46 @@ class BankClient {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 
+			for (int i = 0; i < threadCount; i++) {
+
+				new Thread () {
+					public void run () {
+						System.out.println("TransferRequest");
+						int a = rand.nextInt(bankclient.getAccountList().size());
+						int b = rand.nextInt(bankclient.getAccountList().size());
+
+						try {
+							Socket echoSocket = new Socket (hostname, portNumber);
+							OutputStream out = echoSocket.getOutputStream();
+							InputStream in = echoSocket.getInputStream();
+
+							for (int j = 0; j < iterationCount; j++) {
+								ArrayList<Integer> arr = bankclient.getAccountList();
+								bankclient.transferRequest (out, in, writer, arr.get(a), arr.get(b), 10);	
+							}
+
+						echoSocket.close();
+
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}.start();
+			}
+			
 			sum = 0;
 
 			//Getting balance of 100 accounts and summing
+			 try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			for (int i = 0; i < 100; i++) {
 				ArrayList<Integer> list = bankclient.getAccountList();
 				int accid = list.get(i);
@@ -239,11 +275,11 @@ class BankClient {
 				sum += bal;
 			}
 
+
 			System.out.println("Sum of balances = " + sum);
 			writer.println("Sum of balances = " + sum);
 			writer.println();
-
-			echoSocket.close();
+			echoSocket.close();			
 			writer.close();
 		}catch (UnknownHostException e) {
 			System.err.println("Don't know about host " + hostname);

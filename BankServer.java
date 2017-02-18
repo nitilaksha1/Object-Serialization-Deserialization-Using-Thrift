@@ -5,9 +5,20 @@ import java.util.*;
 import requesttypes.*;
 import responsetypes.*;
 
+class Node{
+	int countPlus;
+	int countMinus;
+
+	Node(int aa,int bb){
+		countPlus = aa;
+		countMinus = bb;
+	}
+}
+
 public class BankServer {
 	
 	private HashMap<Integer, Account> map = new HashMap<Integer, Account>();
+	public static HashMap<Integer,Node> ola = new HashMap<Integer,Node>();
 	private int accountid = 1;
 	private Object lock = new Object();
 
@@ -48,11 +59,36 @@ public class BankServer {
 			Account acc1 = map.get(srcuID);
 			Account acc2 = map.get(targuID);
 
+			if(ola.containsKey(srcuID)){
+				Node temp = ola.get(srcuID);
+				temp.countMinus = temp.countMinus - 1;
+				ola.put(srcuID,temp);
+			}else{
+				Node temp = new Node(0,-1);
+				ola.put(srcuID,temp);
+
+			}
+
+			if(ola.containsKey(targuID)){
+				Node temp = ola.get(targuID);
+				temp.countPlus = temp.countPlus + 1;
+				ola.put(targuID,temp);
+			}else{
+				Node temp = new Node(1,0);
+				ola.put(targuID,temp);
+
+			}
+
 			synchronized (lock) {
 				
 				if ((acc1.getBalance() - amount) < 0) {
+					System.out.println("Acc1: "+ srcuID + " Acc2: "+ targuID);
+					System.out.println("Inside if transfer: "+ " Amount: "+ amount+ " Banalnce: "+ acc1.getBalance());
 					return "FAILED";
 				}
+
+				System.out.println("Acc1: "+ srcuID + " Acc2: "+ targuID);
+				System.out.println("Outside if transfer: "+ " Amount: "+ amount+ " Banalnce: "+ acc1.getBalance());
 
 				acc1.withdraw(amount);
 				acc2.deposit(amount);
@@ -60,13 +96,14 @@ public class BankServer {
 				return "OK";	
 			}	
 		}
-
+		System.out.println("No Accounts found");
 		return "FAILED";		
 	}
 
 	void cleanup (ServerSocket socket) {
 
 		try {
+
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -89,9 +126,7 @@ public class BankServer {
 
 			while (true) {
 				Socket clientsocket = echoserver.accept();
-				System.out.println("Accepting client connection");
 
-				System.out.println(Thread.currentThread().getName());
 
 				Thread t = new Thread () {
 
@@ -102,18 +137,14 @@ public class BankServer {
 
 								InputStream in  = clientsocket.getInputStream();
 						        OutputStream out = clientsocket.getOutputStream();
-								System.out.println("I/O streams created");
 								ObjectInputStream oin;
-								System.out.println(in.available());
 								if(true){
 									oin = new ObjectInputStream(in);	
 								}else{
 									break;
 								}
 								
-								System.out.println("ObjectInputStream created");
 								Request req = (Request)oin.readObject();
-								System.out.println("Object Read");
 								String str = req.getReqName();
 								System.out.println(str);
 
@@ -121,9 +152,7 @@ public class BankServer {
 									case "NewAccountRequest":
 										NewAccountRequest accreq = (NewAccountRequest)req;
 										int uid = bs.createAccount();
-										System.out.println("Account created");
 										NewAccountCreationResponse resp = new NewAccountCreationResponse(accreq.getReqName(), uid);
-										System.out.println("Response object created");
 										ObjectOutputStream os = new ObjectOutputStream(out);
 										os.writeObject(resp);
 										System.out.println("Response sent");
@@ -145,12 +174,9 @@ public class BankServer {
 										BalanceRequest balreq = (BalanceRequest)req;
 										int bal = bs.getBalance(balreq.getAccUID());
 
-										System.out.println("Money Deposited");
 										BalanceResponse resp2 = new BalanceResponse(balreq.getReqName(), bal);
-										System.out.println("Response object created");
 										ObjectOutputStream os2 = new ObjectOutputStream(out);
 										os2.writeObject(resp2);
-										System.out.println("Response sent");
 									break;
 
 									case "TransferRequest":
@@ -160,11 +186,13 @@ public class BankServer {
 										System.out.println("Money Transferred");
 
 										TransferResponse resp3 = new TransferResponse(transreq.getReqName(), stat1);
-										System.out.println("Response object created");
 										ObjectOutputStream os3 = new ObjectOutputStream(out);
 										os3.writeObject(resp3);
 
 										System.out.println("Response sent");
+										for(Map.Entry<Integer,Node> entry : ola.entrySet()){
+											System.out.println(entry.getKey()+" : "+entry.getValue().countPlus+" : "+entry.getValue().countMinus);
+											}
 									break;									
 								}	
 	
@@ -175,18 +203,13 @@ public class BankServer {
 						} catch (ClassNotFoundException e) {
 							//e.printStackTrace();
 						}
-
-						String threadName = Thread.currentThread().getName();
-						System.out.println(threadName);
-						System.out.println("Thread done");
 						
 					}	
 				};
 
 				t.start();
-
-				System.out.println("Ready to accept new connnection");
-						
+			
+	
 			}
 		} catch (IOException e) {
 			System.out.println("Exception caught when trying to listen on port "
@@ -195,7 +218,6 @@ public class BankServer {
         	bs.cleanup(echoserver);	
 		}
 		
-
 		/*try (ServerSocket echoserver = new ServerSocket (portNumber);
 		Socket clientsocket = echoserver.accept();
 		) {
