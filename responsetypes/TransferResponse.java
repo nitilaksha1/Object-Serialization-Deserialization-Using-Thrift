@@ -2,19 +2,15 @@ package responsetypes;
 import java.io.Serializable;
 import responsetypes.Response;
 
-enum Status {
-    OK, FAILED
-}
-
 public class TransferResponse extends Response {
-	private Status stat;
+	private String stat;
 
-	public TransferResponse (String name, Status stat) {
+	public TransferResponse (String name, String stat) {
 		super(name);
 		this.stat = stat;
 	}
 
-	public Status getResponse() {
+	public String getResponse() {
 		return stat;
 	}
 }

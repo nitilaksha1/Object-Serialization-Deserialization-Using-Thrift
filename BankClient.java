@@ -3,6 +3,49 @@ import java.net.*;
 import java.util.*;
 import requesttypes.*;
 import responsetypes.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+class Processor implements Runnable {
+	private int id;
+	BankClient bc;
+	ArrayList<Integer> accList;
+	Random rand = new Random();
+	PrintWriter writer;
+	String hostname;
+	int portNumber;
+
+	Processor (int id, BankClient b, ArrayList<Integer> accList, PrintWriter writer, String hostname, int portNumber) {
+		this.id = id;
+		bc = b;
+		this.accList = accList;
+		this.writer = writer;
+		this.hostname = hostname;
+		this.portNumber = portNumber;
+	}
+	
+	public void run() {
+		System.out.println("Starting "+id);
+		
+		int a = rand.nextInt(accList.size());
+		int b = rand.nextInt(accList.size());
+
+		try {
+			Socket echoSocket = new Socket (hostname, portNumber);
+			OutputStream out = echoSocket.getOutputStream();
+			InputStream in = echoSocket.getInputStream();
+
+			bc.transferRequest (out, in, writer, accList.get(a), accList.get(b), 10);
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("Completed "+id);
+	}
+}
 
 class BankClient {
 	
@@ -84,6 +127,36 @@ class BankClient {
 		return -1;
 	}
 
+	void transferRequest (OutputStream out, InputStream in, PrintWriter writer, int srcuID, int targuID, int amount) throws IOException {
+		
+		try {
+
+			TransferRequest transreq = new TransferRequest("TransferRequest", srcuID, targuID, amount);
+			ObjectOutputStream os = new ObjectOutputStream(out);
+			os.writeObject(transreq);
+			ObjectInputStream oin = new ObjectInputStream(in);
+			Response resp = (Response)oin.readObject();
+			TransferResponse transresp = (TransferResponse)resp;
+
+			if (transresp.getResponse() == "FAILED") {
+				writer.println("Request Name: "+ transresp.getReqName());
+				writer.println("Returned Status: "+ transresp.getResponse());
+				writer.println("SRC ID: "+ srcuID + "TARG ID: " + targuID);	
+			} else {
+				writer.println("Request Name: "+ transresp.getReqName());
+				System.out.println("Request Name: "+ transresp.getReqName());
+				writer.println("Returned Status: "+ transresp.getResponse());	
+				System.out.println("Returned Status: "+ transresp.getResponse());	
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+
 	void processTask () {
 
 	}
@@ -92,8 +165,8 @@ class BankClient {
 
 		String hostname = args[0];
 		int portNumber = Integer.parseInt(args[1]);
-		//int threadCount = Integer.parseInt(args[2]);
-		//int iterationCount = Integer.parseInt(args[3]);
+		int threadCount = Integer.parseInt(args[2]);
+		int iterationCount = Integer.parseInt(args[3]);
 		BankClient bankclient = new BankClient();
 
 		try {
@@ -136,9 +209,42 @@ class BankClient {
 			writer.println("Sum of balances = " + sum);
 			writer.println();
 
-			writer.close();
-			echoSocket.close();
+			//Creating diffeent threads for executing the same task n times
+			ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
+			for (int i = 0; i < iterationCount; i++) {
+				executor.submit(new Processor(i, bankclient, bankclient.getAccountList(), writer, hostname, portNumber));
+			}
+		
+			executor.shutdown();
+
+			try {
+				executor.awaitTermination(1, TimeUnit.DAYS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			sum = 0;
+
+			//Getting balance of 100 accounts and summing
+			for (int i = 0; i < 100; i++) {
+				ArrayList<Integer> list = bankclient.getAccountList();
+				int accid = list.get(i);
+				int bal = bankclient.balanceRequest(out, in, writer, accid);
+
+				if (bal == -1)
+					bal = 0;
+
+				sum += bal;
+			}
+
+			System.out.println("Sum of balances = " + sum);
+			writer.println("Sum of balances = " + sum);
+			writer.println();
+
+			echoSocket.close();
+			writer.close();
 		}catch (UnknownHostException e) {
 			System.err.println("Don't know about host " + hostname);
             System.exit(1);

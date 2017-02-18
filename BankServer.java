@@ -9,6 +9,7 @@ public class BankServer {
 	
 	private HashMap<Integer, Account> map = new HashMap<Integer, Account>();
 	private int accountid = 1;
+	private Object lock = new Object();
 
 	int createAccount () {
 		Account acc = new Account(accountid, 0);
@@ -40,6 +41,38 @@ public class BankServer {
 		return -1;
 	}
 
+	String transfer (int srcuID, int targuID, int amount) {
+		
+		if (map.containsKey(srcuID) && map.containsKey(targuID)) {
+
+			Account acc1 = map.get(srcuID);
+			Account acc2 = map.get(targuID);
+
+			synchronized (lock) {
+				
+				if ((acc1.getBalance() - amount) < 0) {
+					return "FAILED";
+				}
+
+				acc1.withdraw(amount);
+				acc2.deposit(amount);
+
+				return "OK";	
+			}	
+		}
+
+		return "FAILED";		
+	}
+
+	void cleanup (ServerSocket socket) {
+
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void main (String [] args) {
 		
 		if (args.length != 1) {
@@ -49,9 +82,10 @@ public class BankServer {
 		
 		int portNumber = Integer.parseInt(args[0]);
 		BankServer bs = new BankServer();
+		ServerSocket echoserver = null;
 
 		try {
-			ServerSocket echoserver = new ServerSocket (portNumber);	
+			echoserver = new ServerSocket (portNumber);	
 
 			while (true) {
 				Socket clientsocket = echoserver.accept();
@@ -118,6 +152,20 @@ public class BankServer {
 										os2.writeObject(resp2);
 										System.out.println("Response sent");
 									break;
+
+									case "TransferRequest":
+										TransferRequest transreq = (TransferRequest)req;
+										String stat1 = bs.transfer(transreq.getSourceAccUID(), transreq.gettargetAccUID(), transreq.getAmount());
+
+										System.out.println("Money Transferred");
+
+										TransferResponse resp3 = new TransferResponse(transreq.getReqName(), stat1);
+										System.out.println("Response object created");
+										ObjectOutputStream os3 = new ObjectOutputStream(out);
+										os3.writeObject(resp3);
+
+										System.out.println("Response sent");
+									break;									
 								}	
 	
 							}
@@ -144,7 +192,8 @@ public class BankServer {
 			System.out.println("Exception caught when trying to listen on port "
             + portNumber + " or listening for a connection");
         	System.out.println(e.getMessage());
-		}	
+        	bs.cleanup(echoserver);	
+		}
 		
 
 		/*try (ServerSocket echoserver = new ServerSocket (portNumber);
