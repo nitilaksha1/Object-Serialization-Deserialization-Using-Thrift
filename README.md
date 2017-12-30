@@ -1,13 +1,11 @@
 # A Multi-Threaded Bank Server Demonstrating Object Serialization-Deserialization Using Apache Thrift 
 
-<br />
-Abstract:
+###Abstract:
 
 A multi-threaded server for a bank to store the account records for a set of people. The server will maintain this<br /> data in the primary memory, in a hashtable. The Account objects stored in the hashtble will contain the following fields:<br />
 Class Account:
   * UID: Integer
   * balance: Integer
-<br />
 Each Account will have a unique UID, which will be used as a key for storing data in the hashtable of the server. The server supports four operations:
 * CreateAccount: This will insert a new account object in the server’s hashtable. Initial balance will be zero.
   * input parameter: nothing
