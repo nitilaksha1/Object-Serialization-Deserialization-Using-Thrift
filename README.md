@@ -1,12 +1,16 @@
-# A Multi-Threaded Bank Server Demonstrating Object Serialization-Deserialization Using Apache Thrift 
+# A Multi-Threaded Bank Server Demonstrating Object Serialization-Deserialization In Java 
 
 ## Abstract:
 
-A multi-threaded server for a bank to store the account records for a set of people. The server will maintain this<br /> data in the primary memory, in a hashtable. The Account objects stored in the hashtble will contain the following fields:<br />
+A multi-threaded server for a bank to store the account records for a set of people. The server will then serve multiple client requests concurrently.
+
+The Account objects will contain the following fields:<br />
 Class Account:
   * UID: Integer
   * balance: Integer
-Each Account will have a unique UID, which will be used as a key for storing data in the hashtable of the server. The server supports four operations:
+Each Account will have a unique UID.
+
+## Supported Operations:
 * CreateAccount: This will insert a new account object in the server’s hashtable. Initial balance will be zero.
   * input parameter: nothing
   * output parameter: UID for the new account will be returned by this parameter
@@ -19,4 +23,8 @@ Each Account will have a unique UID, which will be used as a key for storing dat
 * Transfer: This will transfer money between two accounts given two account ids.
   * input parameters: Source account UID, Target account UI, Amount to be transferred
   * output parameter: status (OK, or FAILED)
+  
+The object serialization has been performed using two approaches:
+ * Socket Programming in Java
+ * Using Apache Thrift to serve the client requests and hence using Thrift Definition language to define the object interfaces for communication
 
