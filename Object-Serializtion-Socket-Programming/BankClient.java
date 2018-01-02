@@ -59,20 +59,14 @@ class BankClient {
 	void newAccountRequest (OutputStream out, InputStream in, PrintWriter writer) throws IOException{
 
 		try {
-			System.out.println("Inside newAccountRequest");
 			NewAccountRequest accreq = new NewAccountRequest("NewAccountRequest");
-			System.out.println("Created Account Request");
 			ObjectOutputStream os = new ObjectOutputStream(out);
 			os.writeObject(accreq);
-			System.out.println("Sent Account Request");
 			ObjectInputStream oin = new ObjectInputStream(in);
-			System.out.println("ObjectInputStream created");
 			Response resp = (Response)oin.readObject();
 			NewAccountCreationResponse accresp = (NewAccountCreationResponse)resp;
 			writer.println("Request Name: "+ accresp.getReqName());
-			System.out.println("Request Name: "+ accresp.getReqName());
 			writer.println("Returned UID: "+ accresp.getResponse());
-			System.out.println("Returned UID: "+ accresp.getResponse());
 			writer.println();	
 			accountlist.add(accresp.getResponse());
 		} catch (ClassNotFoundException e) {
@@ -92,9 +86,7 @@ class BankClient {
 			Response resp = (Response)oin.readObject();
 			DepositResponse depresp = (DepositResponse)resp;
 			writer.println("Request Name: "+ depresp.getReqName());
-			System.out.println("Request Name: "+ depresp.getReqName());
 			writer.println("Returned Status: "+ depresp.getResponse());
-			System.out.println("Returned Status: "+ depresp.getResponse());
 			writer.println();
 
 		} catch (ClassNotFoundException e) {
@@ -115,9 +107,7 @@ class BankClient {
 			Response resp = (Response)oin.readObject();
 			BalanceResponse balresp = (BalanceResponse)resp;
 			writer.println("Request Name: "+ balresp.getReqName());
-			System.out.println("Request Name: "+ balresp.getReqName());
 			writer.println("Returned Balance: "+ balresp.getResponse());	
-			System.out.println("Returned Balance: "+ balresp.getResponse());
 			return balresp.getResponse();	
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -145,9 +135,7 @@ class BankClient {
 				writer.println("SRC ID: "+ srcuID + "TARG ID: " + targuID);	
 			} else {
 				writer.println("Request Name: "+ transresp.getReqName());
-				System.out.println("Request Name: "+ transresp.getReqName());
 				writer.println("Returned Status: "+ transresp.getResponse());	
-				System.out.println("Returned Status: "+ transresp.getResponse());	
 			}
 			
 			
@@ -172,8 +160,6 @@ class BankClient {
 
 		try {
 			Socket echoSocket = new Socket (hostname, portNumber);
-			System.out.println("client socket created");
-
 			OutputStream out = echoSocket.getOutputStream();
 			InputStream in = echoSocket.getInputStream();
 
@@ -247,7 +233,6 @@ class BankClient {
 						echoSocket.close();
 
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -260,7 +245,6 @@ class BankClient {
 			 try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 

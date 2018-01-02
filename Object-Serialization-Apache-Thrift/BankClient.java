@@ -11,7 +11,7 @@ import java.util.*;
 
 
 
-Public class BankClient {
+public class BankClient {
 	  private ArrayList<Integer> accountlist = new ArrayList<Integer>();
 
 	  ArrayList<Integer> getAccountList () 
@@ -19,29 +19,21 @@ Public class BankClient {
 		return accountlist;
 	  }
 
-
-
-
 	  void newAccountRequest(BankService.Client client, PrintWriter writer) throws TException{
-	  	//client.createAccount();
 	  	System.out.println(client.createAccount());
 	  }
 
 	  void depositRequest(BankService.Client client, PrintWriter writer, int id, int amount) throws TException{
-	  	//client.deposit();
 	  	System.out.println(client.deposit(id,amount));
 	  }
 
 	  int balanceRequest(BankService.Client client, PrintWriter writer, int id) throws TException{
-	  	//client.getBalance();
 	  	System.out.println(client.getBalance(id));
 	  }
 
 	  void transferRequest(BankService.Client client, PrintWriter writer, int src, int target, int amount) throws TException{
-	  	//client.transfer();
 	  	System.out.println(client.transfer(src,target,amount));
 	  }
-
 
 	public static void main(String[] args){
 	  
@@ -50,8 +42,6 @@ Public class BankClient {
 	  	return;
 	  }
 
-
-	  
 	  private static Random rand = new Random();
 	  String hostname = args[0];
 	  int portname = Integer.parseInt(args[1]);
@@ -69,7 +59,6 @@ Public class BankClient {
   			BankService.Client client = BankService.Client(protocol);
   			PrintWriter writer = new PrintWriter("clientLog.txt", "UTF-8");
   			
-  			//newAccountRequest(client,writer);
 			for (int i = 0; i < 100; i++)
 				bc.newAccountRequest(client,writer);
 
@@ -80,6 +69,7 @@ Public class BankClient {
 			}
 
 			int sum = 0;
+
 			//Getting balance of 100 accounts and summing
 			for (int i = 0; i < 100; i++) {
 				ArrayList<Integer> list = bc.getAccountList();
@@ -119,7 +109,6 @@ Public class BankClient {
 						transport.close();
 
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -132,7 +121,6 @@ Public class BankClient {
 			 try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -156,8 +144,5 @@ Public class BankClient {
 	  }catch(TException e){
 	  	e.printStackTrace();
 	  }
-	  
-      
-
 	}
 }

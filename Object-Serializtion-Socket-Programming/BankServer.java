@@ -110,6 +110,57 @@ public class BankServer {
 		}
 	}
 
+	void processRequest (String reqName) {
+		switch (reqName) {
+
+			case "NewAccountRequest":
+				NewAccountRequest accreq = (NewAccountRequest)req;
+				int uid = bs.createAccount();
+				NewAccountCreationResponse resp = new NewAccountCreationResponse(accreq.getReqName(), uid);
+				ObjectOutputStream os = new ObjectOutputStream(out);
+				os.writeObject(resp);
+				System.out.println("Response sent");
+			break;
+
+
+			case "DepositRequest":
+				DepositRequest depreq = (DepositRequest)req;
+				String stat = bs.deposit(depreq.getAccUID(), depreq.getAmount());
+				System.out.println("Money Deposited");
+				DepositResponse resp1 = new DepositResponse(depreq.getReqName(), stat);
+				System.out.println("Response object created");
+				ObjectOutputStream os1 = new ObjectOutputStream(out);
+				os1.writeObject(resp1);
+				System.out.println("Response sent");
+			break;
+
+			case "BalanceRequest":
+				BalanceRequest balreq = (BalanceRequest)req;
+				int bal = bs.getBalance(balreq.getAccUID());
+
+				BalanceResponse resp2 = new BalanceResponse(balreq.getReqName(), bal);
+				ObjectOutputStream os2 = new ObjectOutputStream(out);
+				os2.writeObject(resp2);
+			break;
+
+			case "TransferRequest":
+				TransferRequest transreq = (TransferRequest)req;
+				String stat1 = bs.transfer(transreq.getSourceAccUID(), transreq.gettargetAccUID(), transreq.getAmount());
+
+				System.out.println("Money Transferred");
+
+				TransferResponse resp3 = new TransferResponse(transreq.getReqName(), stat1);
+				ObjectOutputStream os3 = new ObjectOutputStream(out);
+				os3.writeObject(resp3);
+
+				System.out.println("Response sent");
+				for(Map.Entry<Integer,Node> entry : ola.entrySet()){
+					System.out.println(entry.getKey()+" : "+entry.getValue().countPlus+" : "+entry.getValue().countMinus);
+					}
+			break;									
+		}
+	}
+
 	public static void main (String [] args) {
 		
 		if (args.length != 1) {
@@ -146,62 +197,13 @@ public class BankServer {
 								
 								Request req = (Request)oin.readObject();
 								String str = req.getReqName();
-								System.out.println(str);
-
-								switch (str) {
-									case "NewAccountRequest":
-										NewAccountRequest accreq = (NewAccountRequest)req;
-										int uid = bs.createAccount();
-										NewAccountCreationResponse resp = new NewAccountCreationResponse(accreq.getReqName(), uid);
-										ObjectOutputStream os = new ObjectOutputStream(out);
-										os.writeObject(resp);
-										System.out.println("Response sent");
-									break;
-
-
-									case "DepositRequest":
-										DepositRequest depreq = (DepositRequest)req;
-										String stat = bs.deposit(depreq.getAccUID(), depreq.getAmount());
-										System.out.println("Money Deposited");
-										DepositResponse resp1 = new DepositResponse(depreq.getReqName(), stat);
-										System.out.println("Response object created");
-										ObjectOutputStream os1 = new ObjectOutputStream(out);
-										os1.writeObject(resp1);
-										System.out.println("Response sent");
-									break;
-
-									case "BalanceRequest":
-										BalanceRequest balreq = (BalanceRequest)req;
-										int bal = bs.getBalance(balreq.getAccUID());
-
-										BalanceResponse resp2 = new BalanceResponse(balreq.getReqName(), bal);
-										ObjectOutputStream os2 = new ObjectOutputStream(out);
-										os2.writeObject(resp2);
-									break;
-
-									case "TransferRequest":
-										TransferRequest transreq = (TransferRequest)req;
-										String stat1 = bs.transfer(transreq.getSourceAccUID(), transreq.gettargetAccUID(), transreq.getAmount());
-
-										System.out.println("Money Transferred");
-
-										TransferResponse resp3 = new TransferResponse(transreq.getReqName(), stat1);
-										ObjectOutputStream os3 = new ObjectOutputStream(out);
-										os3.writeObject(resp3);
-
-										System.out.println("Response sent");
-										for(Map.Entry<Integer,Node> entry : ola.entrySet()){
-											System.out.println(entry.getKey()+" : "+entry.getValue().countPlus+" : "+entry.getValue().countMinus);
-											}
-									break;									
-								}	
-	
+								processRequest(str);
 							}
 
 						} catch (IOException e) {
-							//e.printStackTrace();
+							e.printStackTrace();
 						} catch (ClassNotFoundException e) {
-							//e.printStackTrace();
+							e.printStackTrace();
 						}
 						
 					}	
@@ -217,39 +219,6 @@ public class BankServer {
         	System.out.println(e.getMessage());
         	bs.cleanup(echoserver);	
 		}
-		
-		/*try (ServerSocket echoserver = new ServerSocket (portNumber);
-		Socket clientsocket = echoserver.accept();
-		) {
-			
-			ObjectInputStream oin = new ObjectInputStream(in);
-
-			try {
-				if (((Request)oin.readObject()).getReqName().equals("NewAccountCreation")) {
-					System.out.println("Request for new account creation");
-					ObjectOutputStream os = new ObjectOutputStream(out);
-					int uid = bs.NewAccountCreation();
-					NewAccountCreationResponse resp = new NewAccountCreationResponse("NewAccountCreation", uid);
-					System.out.println("UID = "+ resp.getResponse());
-					os.writeObject(resp);
-
-				} else {
-					System.out.println("A different request came in");
-				}
-				/*date = (Date)oin.readObject();
-				message= (String) oin.readObject();
-				out.println("Echo: date = "+ date+ " message = " + message);*/
-			/*} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (IOException e) {
-			System.out.println("Exception caught when trying to listen on port "
-            + portNumber + " or listening for a connection");
-        	System.out.println(e.getMessage());
-		}*/
-
-		
 	}
 }
 
